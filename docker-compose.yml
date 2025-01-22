@@ -1,0 +1,9 @@
+services:
+  training:
+    image: training_image  # Replace with the name of your Docker image
+    network_mode: host     # Use host networking
+    env_file:
+      - .env               # Load environment variables from .env file
+    container_name: training  # Name the container
+    stdin_open: true       # Keep standard input open (useful for interactive processes)
+    tty: true              # Allocate a pseudo-TTY for the container
