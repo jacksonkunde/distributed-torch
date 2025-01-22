@@ -87,7 +87,9 @@ def main():
 
     # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
     # torch.distributed.init_process_group(backend="nccl")
+    print("Initializing Process Group ...")
     torch.distributed.init_process_group(backend="gloo")
+    print("Process Group Initialized.")
 
     # Encapsulate the model on the GPU assigned to the current process
     model = torchvision.models.resnet18(weights=None)
@@ -97,8 +99,9 @@ def main():
     model = model.to(device)
 
     # Wrap the model for distributed training
+    print("Wrapping the model for distributed training ...")
     ddp_model = torch.nn.parallel.DistributedDataParallel(model) # , device_ids=[local_rank], output_device=local_rank)
-
+    print("Model Wrapped.")
     # We only save the model who uses device "cuda:0"
     # To resume, the device for the saved model would also be "cuda:0"
     if resume == True:
@@ -116,6 +119,7 @@ def main():
 
     # Data should be prefetched
     # Download should be set to be False, because it is not multiprocess safe
+    print("Loading CIFAR10 dataset ...")
     train_set = torchvision.datasets.CIFAR10(root="data", train=True, download=False, transform=transform)
     test_set = torchvision.datasets.CIFAR10(root="data", train=False, download=False, transform=transform)
 
@@ -125,6 +129,7 @@ def main():
     train_loader = DataLoader(dataset=train_set, batch_size=batch_size, sampler=train_sampler, num_workers=num_workers)
     # Test loader does not have to follow distributed sampling strategy
     test_loader = DataLoader(dataset=test_set, batch_size=128, shuffle=False, num_workers=num_workers)
+    print("CIFAR10 dataset loaded.")
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(ddp_model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-5)
